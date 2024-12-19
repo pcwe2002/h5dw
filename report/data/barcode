@@ -1,0 +1,27 @@
+[{
+        "productid": 1,
+        "productname": "苹果汁",
+        "quantityperunit": "每箱24瓶",
+        "unitprice": 18.0000
+    }, {
+        "productid": 2,
+        "productname": "牛奶",
+        "quantityperunit": "每箱24瓶",
+        "unitprice": 19.0000
+    }, {
+        "productid": 3,
+        "productname": "蕃茄酱",
+        "quantityperunit": "每箱12瓶",
+        "unitprice": 10.0000
+    }, {
+        "productid": 4,
+        "productname": "盐",
+        "quantityperunit": "每箱12瓶",
+        "unitprice": 22.0000
+    }, {
+        "productid": 5,
+        "productname": "麻油",
+        "quantityperunit": "每箱12瓶",
+        "unitprice": 21.3500
+    }
+]

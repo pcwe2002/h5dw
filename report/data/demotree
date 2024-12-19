@@ -1,0 +1,185 @@
+[{
+        "deptId": 100,
+        "parentId": 0,
+        "name": "H5DW报表演示",
+        "order_num": 0,
+        "report": "",
+        "status": "0"
+    }, {
+        "deptId": 101,
+        "parentId": 100,
+        "name": "H5报表",
+        "order_num": 1,
+        "report": "",
+        "status": "0"
+    }, {
+        "deptId": 102,
+        "parentId": 100,
+        "name": "数据窗口",
+        "order_num": 2,
+        "report": "",
+        "status": "0"
+    }, {
+        "deptId": 103,
+        "parentId": 101,
+        "name": "简单表格",
+        "order_num": 1,
+        "report": "customers",
+        "status": "0"
+    },{
+        "deptId": 104,
+        "parentId": 101,
+        "name": "双层表头",
+        "order_num": 2,
+        "report": "twotitle",
+		"data":"customers",
+        "status": "0"
+    },{
+        "deptId": 105,
+        "parentId": 101,
+        "name": "表格文字图象",
+        "order_num": 3,
+        "report": "textpic",
+        "data":"employees",
+        "status": "0"
+    },{
+        "deptId": 106,
+        "parentId": 101,
+        "name": "基本分组",
+        "order_num": 4,
+        "report": "group",
+		"data":"products1",
+        "status": "0"
+    },{
+        "deptId": 107,
+        "parentId": 101,
+        "name": "多字段分组",
+        "order_num": 5,
+        "report": "multigroup",
+        "data":"customers",
+        "status": "0"
+      },{
+        "deptId": 108,
+        "parentId": 101,
+        "name": "多级分组",
+        "order_num": 6,
+        "report": "threegroup",
+        "data":"customers",
+        "status": "0"
+      },{
+        "deptId": 109,
+        "parentId": 101,
+        "name": "分组多行合并",
+        "order_num": 7,
+        "report": "mergegroup",
+        "data":"customers",
+        "status": "0"
+      },{
+        "deptId": 110,
+        "parentId": 101,
+        "name": "分组多行合并2",
+        "order_num": 8,
+        "report": "mergegroup2",
+        "data":"customers",
+        "status": "0"
+      },{
+        "deptId": 111,
+        "parentId": 101,
+        "name": "条码和二维码",
+        "order_num": 9,
+        "report": "barcode",
+        "data":"barcode",
+        "status": "0"
+      },{
+        "deptId": 112,
+        "parentId": 101,
+        "name": "树型分组",
+        "order_num": 10,
+        "report": "treegroup",
+        "data":"customers",
+        "status": "0"
+      },{
+        "deptId": 113,
+        "parentId": 101,
+        "name": "树型列表",
+        "order_num": 11,
+        "report": "treeview",
+        "data":"treeview",
+        "status": "0"
+      },{
+        "deptId": 114,
+        "parentId": 101,
+        "name": "体温单",
+        "order_num": 12,
+        "report": "tiwei",
+        "data":"tiwei",
+        "status": "0"
+      },{
+        "deptId": 120,
+        "parentId": 102,
+        "name": "单个演示",
+        "order_num": 1,
+        "report": "d_test1",
+        "data":"test1",
+        "status": 1
+    },{
+        "deptId": 121,
+        "parentId": 102,
+        "name": "下拉数据窗口",
+        "order_num": 2,
+        "report": "d_dropdown",
+        "data":"test1",
+        "status": 1
+    },{
+        "deptId": 122,
+        "parentId": 102,
+        "name": "自动换行",
+        "order_num": 3,
+        "report": "d_autoheight",
+        "data":"test1",
+        "status": 1
+    },{
+        "deptId": 123,
+        "parentId": 102,
+        "name": "科目余额表",
+        "order_num": 4,
+        "report": "d_kmye",
+        "data":null,
+        "status": 1
+    },{
+        "deptId": 124,
+        "parentId": 102,
+        "name": "现金明细账",
+        "order_num": 4,
+        "report": "d_km",
+        "data":null,
+        "status": 1
+    },
+    {
+      "deptId": 130,
+      "parentId": 100,
+      "name": "其它",
+      "order_num": 3,
+      "report": "d_km",
+      "data":null,
+      "status": 0
+    },
+    {
+      "deptId": 131,
+      "parentId": 130,
+      "name": "筛选排序",
+      "order_num": 1,
+      "report": "sortfilter",
+      "data":"customers",
+      "status": 0
+    },
+    {
+      "deptId": 132,
+      "parentId": 130,
+      "name": "拖动列",
+      "order_num": 1,
+      "report": "dragcol",
+      "data":"customers",
+      "status": 0
+    }
+]

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>datawindow</title>
+  <script src="./axios.min.js"></script>
+  <script src="./exceljs.min.js"></script>
+  <style type="text/css">
+      .spread {
+        position: absolute;
+        overflow: hidden;
+        border: 1px solid lightgray;
+        margin-top: 10px;
+      }
+      button {
+        margin-top: 5px;
+      }
+      .left {
+        margin-left: 50px;
+        width: 200px;
+        height: calc(100% - 150px);
+      }
+      .right {
+        margin-left: 260px;
+        width: calc(100% - 350px);
+        height: calc(100% - 150px);
+      }
+      .main {
+        margin-left: 50px;
+        width: calc(100% - 100px);
+        height: calc(100% - 150px);
+      }
+      @media screen and (max-width: 600px) {
+        .gridpos {
+           width: 100%;
+           height: calc(100% - 150px);
+        }
+
+      }
+      @media screen and (min-width: 600px) {
+        .gridpos {
+          margin-left:50px;
+          width: 100%;
+          height: calc(100% - 150px);
+        }
+      }
+  </style>
+<link href="satreport.css" rel="stylesheet"></head>
+<body onload="load()" oncontextmenu="onMenu(event)" style="background-color: white">
+
+
+<!--  <div id="editor" style="width: 100%;height: 100%;position: absolute;overflow: hidden;display: none "></div>-->
+
+  <div >
+    <div style="margin-left: 20px;">
+    <button onclick="edit(0)">自定义报表</button>
+    <button onclick="loaddw()">加载DW</button>
+    <button onclick="loadrpt()">加载报表</button>
+    <button onclick="loadxls()">加载Excel</button>
+    <button onclick="insert()">插入10000行</button>
+    <button onclick="insertRow(false)">插入行</button>
+    <button onclick="insertRow(true)">添加行</button>
+    <button onclick="retrieve()">查询</button>
+    <button onclick="filter()">过滤</button>
+    <button onclick="setoption()">显示行号</button>
+    <button onclick="deleteRow()">删除行</button>
+    <button onclick="deleteAll()">删除所有</button>
+    <button onclick="update()">保存</button>
+    </div>
+<!--    <button onclick="loaddata()">报表模板</button>-->
+<!--    <button onclick="loaddata(1)">自由表格</button>-->
+<!--    <button onclick="loaddata(2)">主子表</button>-->
+<!--    <button onclick="loaddata(3)">多表头</button>-->
+    <div style="margin-left: 20px;">
+      <button onclick="exportxls()">导出Excel</button>
+      <button onclick="exportpdf()">导出pdf</button>
+      <button onclick="print()">打印</button>
+
+      <label style="margin-left: 20px;">报表来源：</label>
+      <label class="single"><input type="radio" name="datasource" value="1" checked onchange="changSource()"/>文件数据</label>
+      <label class="single"><input type="radio" name="datasource" value="0" onchange="changSource()"/>数据库(配合satserver实现)</label>
+
+
+    </div>
+    <div style="margin-left: 20px;">
+      <label >H5DW QQ群：836173975</label>
+      <a href="http://www.satrda.com/doc/satreport/config.html">文档</a>
+      <a href="http://www.satrda.com/webui">集成到框架示例</a>
+      <label style="margin-left: 10px">过滤：</label>
+      <input id="filter" type="text" style="width: 200px" onchange="allFilter(this.value)">
+    </div>
+    <input type="file" name="dwdata" style="visibility: hidden" id="dwdata">
+    <input type="file" name="xlsdata" accept="*.xlsx" style="visibility: hidden" id="xlsdata">
+  </div>
+
+  <div id="dbTree" class="spread left"></div>
+  <div id="datawindow" class="spread right"></div>
+
+<!--  <div style="height: 800px"></div>-->
+  <script>
+    function onMenu(e) {
+      // e.preventDefault();
+    }
+    async function getData(file) {
+      let ret = await  axios.get('./report/data/' + file);
+      return ret.data;
+    }
+    async function getDataObject(key) {
+      let r = await axios.get('./report/' + key, {responseType: "blob"});
+      let reader = new FileReader();
+      const p = new Promise((resolve, reject) => {
+        reader.readAsText(r.data,'gb2312');
+        reader.onload = () => {
+          const d = parseDW(reader.result);
+          resolve(d);
+        }
+      });
+      return await p;
+    }
+
+
+  </script>
+  <script src="./report/js/tiwei.js"></script>
+  <script>
+
+    // import { exportToPdf } from './src/plugins/pdf';
+
+    function downFlie(blob) {
+      // 创建a标签
+      var elementA = document.createElement('a');
+
+      //文件的名称为时间戳加文件名后缀
+      elementA.download = "H5DWReport";
+      elementA.style.display = 'none';
+
+      //生成一个blob二进制数据，内容为json数据
+      // var blob = new Blob([JSON.stringify(jsonObj)]);
+      // var blob = new Blob([jsonObj]);
+      //生成一个指向blob的URL地址，并赋值给a标签的href属性
+      elementA.href = URL.createObjectURL(new Blob([JSON.stringify(blob)],{type: 'application/json'}));
+      document.body.appendChild(elementA);
+      elementA.click();
+      document.body.removeChild(elementA);
+    }
+
+    function showDialog(pdw, row) {
+      const content = document.createElement('div');
+      content.innerHTML = `
+        <div style="height: 500px;display: flex; flex-flow: column; overflow: hidden">
+          <div>
+            <label>过滤：</label>
+            <input id="filter">
+          </div>
+          <div id="dw" class="spread" style="position:relative;flex: 1"></div>
+        </div>`
+      const el = content.getElementsByClassName('spread')[0];
+      const dw = new DataWindow(el);
+      dw.setOption({onlyShowCurrentRow:true});
+      const od = pdw.dataObject;
+      // 删除reportData会重新生成
+      delete od.reportData;
+      od.createCols = 2;  //1个字段1行数据
+      dw.dataObject = od;
+      pdw.shareData(dw);
+      dw.setRow(row);
+      const d = new H5UI.Modal('选择', [...content.childNodes]);
+      d.show();
+    }
+
+    let xs;
+    let dwMain;
+    let dwDB;
+
+    let datasource = 0;
+    function changSource() {
+      let ds = document.getElementsByName('datasource');
+      if (ds[1].checked) {
+        datasource = 1;
+      } else {
+        datasource = 0;
+      }
+    }
+
+    async function load() {
+
+      groutest = {"units":0,"processing":1,"table":{"retrieve":"threegroup","update":"customers","updatewhere":2,"updatekeyinplace":true,"columns":[{"name":"CustomerID","dbname":"CustomerID","type":"string","key":true,"update":true},{"name":"CompanyName","dbname":"CompanyName","type":"string","key":false,"update":true},{"name":"ContactName","dbname":"ContactName","type":"string","key":false,"update":true},{"name":"ContactTitle","dbname":"ContactTitle","type":"string","key":false,"update":true},{"name":"Address","dbname":"Address","type":"string","key":false,"update":true},{"name":"City","dbname":"City","type":"string","key":false,"update":true},{"name":"Region","dbname":"Region","type":"string","key":false,"update":true},{"name":"PostalCode","dbname":"PostalCode","type":"string","key":false,"update":true},{"name":"Country","dbname":"Country","type":"string","key":false,"update":true},{"name":"Phone","dbname":"Phone","type":"string","key":false,"update":true},{"name":"Fax","dbname":"Fax","type":"string","key":false,"update":true}]},"reportData":{"name":"sheet2","freeze":"A2","styles":[{"align":"center","font":{"size":14}},{"align":"center","border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]}},{"border":{"left":["thin","#bfbfbf"],"bottom":["thin","#bfbfbf"]}},{"border":{"bottom":["thin","#bfbfbf"]}},{"border":{"right":["thin","#bfbfbf"],"bottom":["thin","#bfbfbf"]}},{"border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]}},{"bgcolor":"#f7f7f7"},{"bgcolor":"#e9e9e9"},{"bgcolor":"#d5dce4"}],"merges":["A1:H1","A3:B3","C3:D3","A5:B5","A4:B4","A7:B7","A8:B8","A9:B9"],"rows":{"0":{"cells":{"0":{"text":"客户基本信息","style":0,"merge":[0,7]}},"height":39},"1":{"cells":{"0":{"text":"客户编号","style":1},"1":{"text":"公司名称","style":1},"2":{"text":"联系人","style":1},"3":{"text":"地址","style":1},"4":{"text":"城市","style":1},"5":{"text":"地区","style":1},"6":{"text":"邮编","style":1},"7":{"text":"电话","style":1}},"height":30},"2":{"cells":{"0":{"merge":[0,1],"text":"#{'国家:' +Country}","edit":{"style":"tree"},"style":2},"2":{"merge":[0,1],"text":"","style":3},"4":{"style":3},"5":{"style":3},"6":{"style":3},"7":{"style":4}}},"3":{"cells":{"0":{"style":2,"merge":[0,1],"text":"#{'  区域:' + Region}","edit":{"style":"tree"},},"2":{"style":3},"3":{"style":3},"4":{"style":3},"5":{"style":3},"6":{"style":3},"7":{"style":4}}},"4":{"cells":{"0":{"text":"#{'    城市:' + City}","edit":{"style":"tree"},"merge":[0,1],"style":2},"1":{"text":""},"2":{"style":3},"3":{"style":3},"4":{"style":3},"5":{"style":3},"6":{"style":3},"7":{"style":4}}},"5":{"cells":{"0":{"text":"#{CustomerID}","style":5},"1":{"text":"#{CompanyName}","style":5},"2":{"text":"#{ContactName}","style":5},"3":{"text":"#{Address}","style":5},"4":{"text":"#{City}","style":5},"5":{"text":"#{Region}","style":5},"6":{"text":"#{PostalCode}","style":5},"7":{"text":"#{Phone}","style":5}}},"6":{"cells":{"0":{"merge":[0,1],"text":"#{'    ' + City + '市人数统计:' + count(City for group 3)}","style":6},"1":{"style":6},"2":{"style":6},"3":{"style":6},"4":{"style":6},"5":{"style":6},"6":{"style":6},"7":{"style":6}}},"7":{"cells":{"0":{"merge":[0,1],"text":"#{'  ' + Region + '区域人数统计:' + count(Region for group 2)}","style":7},"1":{"style":7},"2":{"style":7},"3":{"style":7},"4":{"style":7},"5":{"style":7},"6":{"style":7},"7":{"style":7}}},"8":{"cells":{"0":{"merge":[0,1],"text":"#{'  ' + Country + '人数统计:' + count(City for group 1)}","style":8},"1":{"style":8},"2":{"style":8},"3":{"style":8},"4":{"style":8},"5":{"style":8},"6":{"style":8},"7":{"style":8}}},"len":10,"height":25,"minHeight":5},"cols":{"1":{"width":190},"3":{"width":138},"7":{"width":108},"len":8},"report":{"calc":false,"bands":[{"start":1,"len":1,"name":"header"},{"start":2,"len":1,"name":"header.1","level":1},{"start":3,"len":1,"name":"header.2","level":2},{"start":4,"len":1,"name":"header.3","level":3},{"start":5,"len":1,"name":"detail"},{"start":6,"len":1,"name":"trailer.3","level":3},{"start":7,"len":1,"name":"trailer.2","level":2},{"start":8,"len":1,"name":"trailer.1","level":1}],"group":[{"level":1,"by":["Country"]},{"level":2,"by":["Region"]},{"level":3,"by":["City"]}]},"validations":[],"autofilter":{}}};
+      let treedw = {"processing":1,"table":{"retrieve":"treeview","update":"sys_dept","columns":[{"name":"deptId","type":"long","dbname":"dept_id","key":1,"update":1},{"name":"parentId","type":"long","dbname":"parent_id","key":0,"update":1},{"name":"name","type":"string","dbname":"name","key":0,"update":1},{"name":"order_num","type":"long","dbname":"order_num","key":0,"update":1},{"name":"report","type":"string","dbname":"report","key":0,"update":1},{"name":"status","type":"string","dbname":"status","key":0,"update":1}]},"reportData":{"name":"sheet1","freeze":"A1","styles":[{}],"merges":[],"rows":{"0":{"height":28,"cells":{"0":{"text":"#{name}","style":0,"edit":{"style":"tree"}}}},"len":1,"height":25,"minHeight":5},"cols":{"0":{"width":"98%"},"len":1},"report":{"calc":false,"bands":[{"start":0,"len":0,"name":"header"},{"start":0,"len":1,"name":"detail"}],"tree":{"parentId":"parentId","id":"deptId"}},"validations":[],"autofilter":{}}};
+      let dataTree = [{"deptId":100,"parentId":0,"name":"H5DW报表演示","order_num":0,"report":"","status":"0"},{"deptId":101,"parentId":100,"name":"H5报表","order_num":1,"report":"","status":"0"},{"deptId":102,"parentId":100,"name":"数据窗口","order_num":2,"report":"","status":"0"},{"deptId":103,"parentId":101,"name":"简单表格","order_num":1,"report":"customers","status":"0"},{"deptId":104,"parentId":101,"name":"双层表头","order_num":2,"report":"twotitle","status":"0"},{"deptId":105,"parentId":101,"name":"表格文字图象","order_num":3,"report":"textpic","status":"0"},{"deptId":106,"parentId":101,"name":"基本分组","order_num":4,"report":"group","status":"0"},{"deptId":107,"parentId":102,"name":"单个演示","order_num":4,"report":"d_test1","status":"1"}];
+
+      let treegrid = {"units":0,"processing":1,"table":{"retrieve":"select * from customers","update":"customers","updatewhere":2,"updatekeyinplace":true,"columns":[{"name":"CustomerID","dbname":"CustomerID","type":"string","key":true,"update":true},{"name":"CompanyName","dbname":"CompanyName","type":"string","key":false,"update":true},{"name":"ContactName","dbname":"ContactName","type":"string","key":false,"update":true},{"name":"ContactTitle","dbname":"ContactTitle","type":"string","key":false,"update":true},{"name":"Address","dbname":"Address","type":"string","key":false,"update":true},{"name":"City","dbname":"City","type":"string","key":false,"update":true},{"name":"Region","dbname":"Region","type":"string","key":false,"update":true},{"name":"PostalCode","dbname":"PostalCode","type":"string","key":false,"update":true},{"name":"Country","dbname":"Country","type":"string","key":false,"update":true},{"name":"Phone","dbname":"Phone","type":"string","key":false,"update":true},{"name":"Fax","dbname":"Fax","type":"string","key":false,"update":true}]},"reportData":{"name":"sheet2","freeze":"A2","styles":[{"border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]}},{"bgcolor":"#e9e9e9","border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]},"align":"center"},{"align":"center"},{"align":"center","font":{"size":14}}],"merges":["A1:H1"],"rows":{"0":{"cells":{"0":{"text":"客户基本信息","style":3,"merge":[0,7]}},"height":39},"1":{"cells":{"0":{"text":"客户编号","style":1},"1":{"text":"公司名称","style":1},"2":{"text":"联系人","style":1},"3":{"text":"地址","style":1},"4":{"text":"城市","style":1},"5":{"text":"地区","style":1},"6":{"text":"邮编","style":1},"7":{"text":"电话","style":1}}},"2":{"cells":{"0":{"text":"#{CustomerID}","style":0},"1":{"text":"#{CompanyName}","style":0},"2":{"text":"#{ContactName}","style":0},"3":{"text":"#{Address}","style":0},"4":{"text":"#{City}","style":0},"5":{"text":"#{Region}","style":0},"6":{"text":"#{PostalCode}","style":0},"7":{"text":"#{Phone}","style":0}}},"len":3,"height":25,"minHeight":5},"cols":{"1":{"width":120},"3":{"width":138},"7":{"width":108},"len":8},"report":{"calc":true,"bands":[{"start":1,"len":1,"name":"header"},{"start":2,"len":1,"name":"detail"}]},"validations":[],"autofilter":{}}};
+      const dw1data = [{"CustomerID":"ALFKI","CompanyName":"三川实业有限公司","ContactName":"刘小姐","ContactTitle":"销售代表","Address":"大崇明路 50 号","City":"天津","Region":"华北","PostalCode":"343567","Country":"中国","Phone":"(030) 30074321","Fax":"90460/02"},{"CustomerID":"ANATR","CompanyName":"东南实业","ContactName":"王先生11","ContactTitle":"物主","Address":"承德西路 80 号","City":"天津","Region":"华北","PostalCode":"234575","Country":"中国","Phone":"(030) 35554729","Fax":"(030) 3555/3744"},{"CustomerID":"ANTON","CompanyName":"坦森行贸易","ContactName":"王炫皓","ContactTitle":"物主","Address":"黄台北路 780 号","City":"石家庄","Region":"华北","PostalCode":"985060","Country":"中国","Phone":"(0321) 5553932","Fax":null},{"CustomerID":"AROUT","CompanyName":"国顶有限公司","ContactName":"方先生","ContactTitle":"销售代表","Address":"天府东街 30 号","City":"深圳","Region":"华南","PostalCode":"890879","Country":"中国","Phone":"(0571) 45557788","Fax":"(0571) 45556750"},{"CustomerID":"BERGS","CompanyName":"通恒机械","ContactName":"黄小姐","ContactTitle":"采购员","Address":"东园西甲 30 号","City":"南京","Region":"华东","PostalCode":"798089","Country":"中国","Phone":"(0921) 9123465","Fax":"(0921) 55123467"},{"CustomerID":"BLAUS","CompanyName":"森通","ContactName":"王先生","ContactTitle":"销售代表","Address":"常保阁东 80 号","City":"天津","Region":"华北","PostalCode":"787045","Country":"中国","Phone":"(030) 30058460","Fax":"(030)  33008924"},{"CustomerID":"BLONP","CompanyName":"国皓","ContactName":"黄雅玲","ContactTitle":"市场经理","Address":"广发北路 10 号","City":"大连","Region":"东北","PostalCode":"565479","Country":"中国","Phone":"(0671) 88601531","Fax":"(0671) 88601532"},{"CustomerID":"BOLID","CompanyName":"迈多贸易","ContactName":"陈先生","ContactTitle":"物主","Address":"临翠大街 80 号","City":"西安","Region":"西北","PostalCode":"907987","Country":"中国","Phone":"(091) 85552282","Fax":"(091) 85559199"},{"CustomerID":"BONAP","CompanyName":"祥通","ContactName":"刘先生","ContactTitle":"物主","Address":"花园东街 90 号","City":"重庆","Region":"西南","PostalCode":"567690","Country":"中国","Phone":"(078) 91244540","Fax":"(078) 91244541"},{"CustomerID":"BOTTM","CompanyName":"广通","ContactName":"王先生","ContactTitle":"结算经理","Address":"平谷嘉石大街 38 号","City":"重庆","Region":"西南","PostalCode":"808059","Country":"中国","Phone":"(078) 95554729","Fax":"(078) 95553745"},{"CustomerID":"BSBEV","CompanyName":"光明杂志","ContactName":"谢丽秋","ContactTitle":"销售代表","Address":"黄石路 50 号","City":"深圳","Region":"华南","PostalCode":"760908","Country":"中国","Phone":"(0571) 45551212","Fax":null},{"CustomerID":"CACTU","CompanyName":"威航货运有限公司","ContactName":"刘先生","ContactTitle":"销售代理","Address":"经七纬二路 13 号","City":"大连","Region":"东北","PostalCode":"120412","Country":"中国","Phone":"(061) 11355555","Fax":"(061) 11354892"},{"CustomerID":"CENTC","CompanyName":"三捷实业","ContactName":"王先生","ContactTitle":"市场经理","Address":"英雄山路 84 号","City":"大连","Region":"东北","PostalCode":"130083","Country":"中国","Phone":"(061) 15553392","Fax":"(061) 15557293"},{"CustomerID":"CHOPS","CompanyName":"浩天旅行社","ContactName":"方先生","ContactTitle":"物主","Address":"白广路 314 号","City":"天津","Region":"华北","PostalCode":"234254","Country":"中国","Phone":"(030) 30076545","Fax":null},{"CustomerID":"COMMI","CompanyName":"同恒","ContactName":"刘先生","ContactTitle":"销售员","Address":"七一路 37 号","City":"天津","Region":"华北","PostalCode":"453466","Country":"中国","Phone":"(030) 35557647","Fax":null},{"CustomerID":"CONSH","CompanyName":"万海","ContactName":"林小姐","ContactTitle":"销售代表","Address":"劳动路 23 号","City":"厦门","Region":"华南","PostalCode":"353467","Country":"中国","Phone":"(071) 45552282","Fax":"(071) 45559199"},{"CustomerID":"DRACD","CompanyName":"世邦","ContactName":"黎先生","ContactTitle":"采购员","Address":"光明东路 395 号","City":"海口","Region":"华南","PostalCode":"454748","Country":"中国","Phone":"(0241) 10391231","Fax":"(0241) 10594282"},{"CustomerID":"DUMON","CompanyName":"迈策船舶","ContactName":"王俊元","ContactTitle":"物主","Address":"沉香街 329 号","City":"常州","Region":"华东","PostalCode":"565474","Country":"中国","Phone":"(056) 40678888","Fax":"(056) 40678989"},{"CustomerID":"EASTC","CompanyName":"中通","ContactName":"林小姐","ContactTitle":"销售代理","Address":"光复北路 895 号","City":"天津","Region":"华北","PostalCode":"809784","Country":"中国","Phone":"(030) 35550297","Fax":"(030) 35553373"},{"CustomerID":"ERNSH","CompanyName":"正人资源","ContactName":"谢小姐","ContactTitle":"销售经理","Address":"临江东街 62 号","City":"深圳","Region":"华南","PostalCode":"906853","Country":"中国","Phone":"(0571) 76753425","Fax":"(0571) 76753426"},{"CustomerID":"FAMIA","CompanyName":"红阳事业","ContactName":"王先生","ContactTitle":"市场助理","Address":"外滩西路 238 号","City":"深圳","Region":"华南","PostalCode":"687759","Country":"中国","Phone":"(0571) 75559857","Fax":null},{"CustomerID":"FISSA","CompanyName":"嘉元实业","ContactName":"刘小姐","ContactTitle":"结算经理","Address":"东湖大街 28 号","City":"天津","Region":"华北","PostalCode":"458965","Country":"中国","Phone":"(091) 25559444","Fax":"(091) 25555593"},{"CustomerID":"FOLIG","CompanyName":"嘉业","ContactName":"刘先生","ContactTitle":"助理销售代理","Address":"经三纬二路 8 号","City":"石家庄","Region":"华北","PostalCode":"576906","Country":"中国","Phone":"(0321) 20161016","Fax":"(0321) 20161017"},{"CustomerID":"FOLKO","CompanyName":"五洲信托","ContactName":"苏先生","ContactTitle":"物主","Address":"沿江北路 942 号","City":"南京","Region":"华东","PostalCode":"876060","Country":"中国","Phone":"(087) 69534671","Fax":null},{"CustomerID":"FRANK","CompanyName":"友恒信托","ContactName":"余小姐","ContactTitle":"市场经理","Address":"经二路 9 号","City":"秦皇岛","Region":"华北","PostalCode":"500798","Country":"中国","Phone":"(089) 3877310","Fax":"(089) 3877451"},{"CustomerID":"FRANR","CompanyName":"国银贸易","ContactName":"余小姐","ContactTitle":"市场经理","Address":"辅城街 42 号","City":"南京","Region":"华东","PostalCode":"546590","Country":"中国","Phone":"(087) 40322121","Fax":"(087) 40322120"},{"CustomerID":"FRANS","CompanyName":"文成","ContactName":"唐小姐","ContactTitle":"销售代表","Address":"临江街 32 号","City":"常州","Region":"华东","PostalCode":"820097","Country":"中国","Phone":"(056) 34988260","Fax":"(056) 34988261"},{"CustomerID":"FURIB","CompanyName":"康浦","ContactName":"王先生","ContactTitle":"销售经理","Address":"授业路 361 号","City":"南京","Region":"华东","PostalCode":"964532","Country":"中国","Phone":"(087) 43542534","Fax":"(087) 43542535"},{"CustomerID":"GALED","CompanyName":"东旗","ContactName":"王先生","ContactTitle":"市场经理","Address":"尊石路 238 号","City":"深圳","Region":"华南","PostalCode":"411012","Country":"中国","Phone":"(0571) 20334560","Fax":"(0571) 20334561"},{"CustomerID":"GODOS","CompanyName":"建资","ContactName":"陈先生","ContactTitle":"销售经理","Address":"广惠东路 38 号","City":"张家口","Region":"华北","PostalCode":"242353","Country":"中国","Phone":"(0922) 5558282","Fax":null},{"CustomerID":"GOURL","CompanyName":"业兴","ContactName":"李柏麟","ContactTitle":"销售员","Address":"淮河路 348 号","City":"上海","Region":"华东","PostalCode":"241008","Country":"中国","Phone":"(021) 85559482","Fax":null},{"CustomerID":"GREAL","CompanyName":"仪和贸易","ContactName":"王先生","ContactTitle":"市场经理","Address":"经三纬四路 18 号","City":"北京","Region":"华北","PostalCode":"120475","Country":"中国","Phone":"(010) 65557555","Fax":null},{"CustomerID":"GROSR","CompanyName":"光远商贸","ContactName":"陈先生","ContactTitle":"物主","Address":"成川东街 951 号","City":"天津","Region":"华北","PostalCode":"122096","Country":"中国","Phone":"(030) 32832951","Fax":"(030) 32833397"},{"CustomerID":"HANAR","CompanyName":"实翼","ContactName":"谢小姐","ContactTitle":"结算经理","Address":"永惠西街 392 号","City":"南昌","Region":"华东","PostalCode":"674674","Country":"中国","Phone":"(0211) 5550091","Fax":"(0211) 5558765"},{"CustomerID":"HILAA","CompanyName":"远东开发","ContactName":"王先生","ContactTitle":"销售代表","Address":"崇盛路 82 号","City":"深圳","Region":"华南","PostalCode":"498045","Country":"中国","Phone":"(0571) 75551340","Fax":"(0571) 75551948"},{"CustomerID":"HUNGC","CompanyName":"五金机械","ContactName":"苏先生","ContactTitle":"销售代表","Address":"德昌路甲 29 号","City":"大连","Region":"东北","PostalCode":"564576","Country":"中国","Phone":"(053) 5556874","Fax":"(053) 5552376"},{"CustomerID":"HUNGO","CompanyName":"师大贸易","ContactName":"苏先生","ContactTitle":"销售员","Address":"黄岗北路 73 号","City":"天津","Region":"华北","PostalCode":"683045","Country":"中国","Phone":"(030) 29672542","Fax":"(030) 29673333"},{"CustomerID":"ISLAT","CompanyName":"鑫增贸易","ContactName":"周先生","ContactTitle":"市场经理","Address":"东府大街 31 号","City":"西安","Region":"西北","PostalCode":"502255","Country":"中国","Phone":"(091) 65558888","Fax":null},{"CustomerID":"KOENE","CompanyName":"永业房屋","ContactName":"谢丽秋","ContactTitle":"销售员","Address":"东园大路 78 号","City":"重庆","Region":"西南","PostalCode":"101057","Country":"中国","Phone":"(025) 55509876","Fax":null},{"CustomerID":"LACOR","CompanyName":"霸力建设","ContactName":"谢小姐","ContactTitle":"销售代表","Address":"东岗大路 9 号","City":"重庆","Region":"西南","PostalCode":"048766","Country":"中国","Phone":"(025) 30598410","Fax":"(025) 30598511"},{"CustomerID":"LAMAI","CompanyName":"池春建设","ContactName":"王先生","ContactTitle":"销售经理","Address":"青年南街 291 号","City":"天津","Region":"华北","PostalCode":"502564","Country":"中国","Phone":"(030) 61776110","Fax":"(030) 61776111"},{"CustomerID":"LAUGB","CompanyName":"和福建设","ContactName":"刘先生","ContactTitle":"市场助理","Address":"创业西路 238 号","City":"天津","Region":"华北","PostalCode":"055654","Country":"中国","Phone":"(030) 15553392","Fax":"(030) 15557293"},{"CustomerID":"LAZYK","CompanyName":"春永建设","ContactName":"王先生","ContactTitle":"市场经理","Address":"劳动辅路 395 号","City":"深圳","Region":"华南","PostalCode":"013056","Country":"中国","Phone":"(0571) 35557969","Fax":"(0571) 35556221"},{"CustomerID":"LEHMS","CompanyName":"幸义房屋","ContactName":"刘先生","ContactTitle":"销售代表","Address":"七一路 89 号","City":"南京","Region":"华东","PostalCode":"167556","Country":"中国","Phone":"(069) 20245984","Fax":"(069) 20245874"},{"CustomerID":"LETSS","CompanyName":"兴中保险","ContactName":"方先生","ContactTitle":"物主","Address":"豪威西路 238 号","City":"厦门","Region":"华南","PostalCode":"750165","Country":"中国","Phone":"(0415) 5555938","Fax":null},{"CustomerID":"LILAS","CompanyName":"富泰人寿","ContactName":"陈先生","ContactTitle":"结算经理","Address":"光伦东路 381 号","City":"天津","Region":"华北","PostalCode":"995085","Country":"中国","Phone":"(030) 33116954","Fax":"(030) 33117256"},{"CustomerID":"LINOD","CompanyName":"保信人寿","ContactName":"方先生","ContactTitle":"物主","Address":"创业北路 32 号","City":"海口","Region":"华南","PostalCode":"301256","Country":"中国","Phone":"(0899) 3345612","Fax":"(0899) 3349393"},{"CustomerID":"LONEP","CompanyName":"正太实业","ContactName":"林慧音","ContactTitle":"销售经理","Address":"花园西街 28 号","City":"天津","Region":"华北","PostalCode":"440875","Country":"中国","Phone":"(030) 25559573","Fax":"(030) 25559646"},{"CustomerID":"MAGAA","CompanyName":"阳林","ContactName":"刘先生","ContactTitle":"市场经理","Address":"城东大街 47 号","City":"深圳","Region":"华南","PostalCode":"801056","Country":"中国","Phone":"(0571) 36402300","Fax":"(0571) 36402311"},{"CustomerID":"MAISD","CompanyName":"悦海","ContactName":"陈玉美","ContactTitle":"销售代理","Address":"八一路 384 号","City":"青岛","Region":"华东","PostalCode":"054356","Country":"中国","Phone":"(0217) 2012467","Fax":"(0217) 2012468"},{"CustomerID":"MEREP","CompanyName":"华科","ContactName":"吴小姐","ContactTitle":"市场助理","Address":"和光北路 952 号","City":"大连","Region":"东北","PostalCode":"280235","Country":"中国","Phone":"(0514) 5558054","Fax":"(0514) 5558055"},{"CustomerID":"MORGK","CompanyName":"仲堂企业","ContactName":"徐文彬","ContactTitle":"市场助理","Address":"创业街 57 号","City":"天津","Region":"华北","PostalCode":"440007","Country":"中国","Phone":"(030) 34202376","Fax":null},{"CustomerID":"NORTS","CompanyName":"富同企业","ContactName":"王先生","ContactTitle":"销售员","Address":"广西路 24 号","City":"石家庄","Region":"华北","PostalCode":"780008","Country":"中国","Phone":"(031) 5557733","Fax":"(031) 555-2530"},{"CustomerID":"OCEAN","CompanyName":"利合材料","ContactName":"陈先生","ContactTitle":"销售代理","Address":"东临大街 32 号","City":"秦皇岛","Region":"华北","PostalCode":"780005","Country":"中国","Phone":"(0117) 1355333","Fax":"(0117) 1355535"},{"CustomerID":"OLDWO","CompanyName":"瑞栈工艺","ContactName":"苏先生","ContactTitle":"销售代表","Address":"创业路 361 号","City":"南京","Region":"华东","PostalCode":"825777","Country":"中国","Phone":"(097) 5557584","Fax":"(097) 555-2880"},{"CustomerID":"OTTIK","CompanyName":"一诠精密工业","ContactName":"刘先生","ContactTitle":"物主","Address":"基石路 238 号","City":"深圳","Region":"华南","PostalCode":"687578","Country":"中国","Phone":"(0571) 10644327","Fax":"(0571) 10765721"},{"CustomerID":"PARIS","CompanyName":"立日股份有限公司","ContactName":"李柏麟","ContactTitle":"物主","Address":"惠安大路 38 号","City":"石家庄","Region":"华北","PostalCode":"502299","Country":"中国","Phone":"(031) 4234226","Fax":"(031) 4234227"},{"CustomerID":"PERIC","CompanyName":"就业广兑","ContactName":"唐小姐","ContactTitle":"销售代表","Address":"淮水路 348 号","City":"天津","Region":"华北","PostalCode":"786785","Country":"中国","Phone":"(030) 55223745","Fax":"(030) 55453745"},{"CustomerID":"PICCO","CompanyName":"顶上系统","ContactName":"方先生","ContactTitle":"销售经理","Address":"纬四路 523 号","City":"常州","Region":"华东","PostalCode":"907077","Country":"中国","Phone":"(056) 6562722","Fax":"(056) 6562723"},{"CustomerID":"PRINI","CompanyName":"康毅系统","ContactName":"林彩瑜","ContactTitle":"销售代表","Address":"成东大街 951 号","City":"张家口","Region":"华北","PostalCode":"801070","Country":"中国","Phone":"(019) 3565634","Fax":null},{"CustomerID":"QUEDE","CompanyName":"兰格英语","ContactName":"王先生","ContactTitle":"结算经理","Address":"广安南街 82 号","City":"北京","Region":"华北","PostalCode":"785678","Country":"中国","Phone":"(010) 65554252","Fax":"(010) 65554545"},{"CustomerID":"QUEEN","CompanyName":"留学服务中心","ContactName":"赵小姐","ContactTitle":"市场助理","Address":"定成路 92 号","City":"北京","Region":"华北","PostalCode":"785878","Country":"中国","Phone":"(010) 85551189","Fax":null},{"CustomerID":"QUICK","CompanyName":"高上补习班","ContactName":"徐先生","ContactTitle":"结算经理","Address":"广场路 205 号","City":"天津","Region":"华北","PostalCode":"787869","Country":"中国","Phone":"(030) 72035188","Fax":null},{"CustomerID":"RANCH","CompanyName":"大东补习班","ContactName":"陈小姐","ContactTitle":"销售代表","Address":"创业东路 38 号","City":"深圳","Region":"华南","PostalCode":"837207","Country":"中国","Phone":"(0571) 51235555","Fax":"(0571) 51235556"},{"CustomerID":"RATTC","CompanyName":"学仁贸易","ContactName":"余小姐","ContactTitle":"助理销售代表","Address":"辅城路 601 号","City":"温州","Region":"华东","PostalCode":"837209","Country":"中国","Phone":"(055) 5555939","Fax":"(055) 5553620"},{"CustomerID":"REGGC","CompanyName":"建国科技","ContactName":"陈先生","ContactTitle":"销售员","Address":"肥水路 93 号","City":"天津","Region":"华北","PostalCode":"345256","Country":"中国","Phone":"(030) 52256721","Fax":"(030) 52256722"},{"CustomerID":"RICAR","CompanyName":"宇欣实业","ContactName":"黄雅玲","ContactTitle":"助理销售代理","Address":"大峪口街 702 号","City":"天津","Region":"华北","PostalCode":"101046","Country":"中国","Phone":"(030) 45553412","Fax":null},{"CustomerID":"RICSU","CompanyName":"永大企业","ContactName":"余小姐","ContactTitle":"销售经理","Address":"港务口街 29 号","City":"南京","Region":"华东","PostalCode":"478668","Country":"中国","Phone":"(089) 7034214","Fax":null},{"CustomerID":"ROMEY","CompanyName":"德化食品","ContactName":"王先生","ContactTitle":"结算经理","Address":"劝业路 103 号","City":"天津","Region":"华北","PostalCode":"871108","Country":"中国","Phone":"(030) 74546200","Fax":"(030) 77456210"},{"CustomerID":"SANTG","CompanyName":"汉光企管","ContactName":"王先生","ContactTitle":"物主","Address":"成前路 116 号","City":"重庆","Region":"西南","PostalCode":"027773","Country":"中国","Phone":"(071) 98923542","Fax":"(071) 98924744"},{"CustomerID":"SAVEA","CompanyName":"大钰贸易","ContactName":"胡继尧","ContactTitle":"销售代表","Address":"冠成园路 321 号","City":"重庆","Region":"西南","PostalCode":"801023","Country":"中国","Phone":"(071) 85558097","Fax":null},{"CustomerID":"SEVES","CompanyName":"艾德高科技","ContactName":"谢小姐","ContactTitle":"销售经理","Address":"起义路 231 号","City":"天津","Region":"华北","PostalCode":"013072","Country":"中国","Phone":"(030) 55657717","Fax":"(030) 55655646"},{"CustomerID":"SIMOB","CompanyName":"百达电子","ContactName":"徐文彬","ContactTitle":"物主","Address":"黄口江路 521 号","City":"天津","Region":"华北","PostalCode":"972077","Country":"中国","Phone":"(030) 31123456","Fax":"(030) 31133557"},{"CustomerID":"SPECD","CompanyName":"赐芳股份","ContactName":"刘先生","ContactTitle":"市场经理","Address":"车站东路 831 号","City":"厦门","Region":"华南","PostalCode":"899453","Country":"中国","Phone":"(0177) 4755601","Fax":"(1177) 4755602"},{"CustomerID":"SPLIR","CompanyName":"昇昕股份有限公司","ContactName":"谢小姐","ContactTitle":"销售经理","Address":"车站南路 721 号","City":"深圳","Region":"华南","PostalCode":"820077","Country":"中国","Phone":"(0571) 35554680","Fax":"(0571) 35556525"},{"CustomerID":"SUPRD","CompanyName":"福星制衣厂股份有限公司","ContactName":"徐先生","ContactTitle":"结算经理","Address":"机场东路 951 号","City":"天津","Region":"华北","PostalCode":"050337","Country":"中国","Phone":"(030) 23672220","Fax":"(030) 23672221"},{"CustomerID":"THEBI","CompanyName":"上河工业","ContactName":"谢小姐","ContactTitle":"市场经理","Address":"车站路 631 号","City":"海口","Region":"华南","PostalCode":"013077","Country":"中国","Phone":"(053) 5553612","Fax":null},{"CustomerID":"THECR","CompanyName":"新巨企业","ContactName":"成先生","ContactTitle":"市场助理","Address":"车站西路 391 号","City":"成都","Region":"西南","PostalCode":"350894","Country":"中国","Phone":"(046) 55565834","Fax":"(046) 55568083"},{"CustomerID":"TOMSP","CompanyName":"东帝望","ContactName":"成先生","ContactTitle":"市场经理","Address":"起义路甲 921 号","City":"青岛","Region":"华东","PostalCode":"474747","Country":"中国","Phone":"(0251) 1031259","Fax":"(0251) 1035695"},{"CustomerID":"TORTU","CompanyName":"协昌妮绒有限公司","ContactName":"王先生","ContactTitle":"物主","Address":"长春路 371 号","City":"天津","Region":"华北","PostalCode":"507392","Country":"中国","Phone":"(030) 45552933","Fax":null},{"CustomerID":"TRADH","CompanyName":"亚太公司","ContactName":"陈先生","ContactTitle":"销售代表","Address":"石碑路丁 211 号","City":"石家庄","Region":"华北","PostalCode":"871102","Country":"中国","Phone":"(031) 55562167","Fax":"(031) 55562168"},{"CustomerID":"TRAIH","CompanyName":"伸格公司","ContactName":"林小姐","ContactTitle":"销售员","Address":"石碑路甲 141 号","City":"深圳","Region":"华南","PostalCode":"342356","Country":"中国","Phone":"(0571) 55518257","Fax":"(0571) 55512174"},{"CustomerID":"VAFFE","CompanyName":"中硕贸易","ContactName":"苏先生","ContactTitle":"销售经理","Address":"威成路 321 号","City":"深圳","Region":"华南","PostalCode":"837206","Country":"中国","Phone":"(0571) 86213243","Fax":"(0571) 86223344"},{"CustomerID":"VICTE","CompanyName":"千固","ContactName":"苏先生","ContactTitle":"销售代理","Address":"明成西街 471 号","City":"秦皇岛","Region":"华北","PostalCode":"598018","Country":"中国","Phone":"(071) 8325486","Fax":"(071) 8325487"},{"CustomerID":"VINET","CompanyName":"山泰企业","ContactName":"黎先生","ContactTitle":"结算经理","Address":"舜井街 561 号","City":"天津","Region":"华北","PostalCode":"575909","Country":"中国","Phone":"(030) 26471510","Fax":"(030) 26471511"},{"CustomerID":"WANDK","CompanyName":"凯旋科技","ContactName":"方先生","ContactTitle":"销售代表","Address":"使馆路 371 号","City":"天津","Region":"华北","PostalCode":"212400","Country":"中国","Phone":"(030) 71100361","Fax":"(030) 07115428"},{"CustomerID":"WARTH","CompanyName":"升格企业","ContactName":"王俊元","ContactTitle":"结算经理","Address":"黄池路 931 号","City":"石家庄","Region":"华北","PostalCode":"974030","Country":"中国","Phone":"(031) 9814655","Fax":"(031) 9813655"},{"CustomerID":"WELLI","CompanyName":"凯诚国际顾问公司","ContactName":"刘先生","ContactTitle":"销售经理","Address":"威刚街 481 号","City":"深圳","Region":"华南","PostalCode":"175600","Country":"中国","Phone":"(0571) 35558122","Fax":null},{"CustomerID":"WHITC","CompanyName":"椅天文化事业","ContactName":"方先生","ContactTitle":"物主","Address":"花园西路 831 号","City":"常州","Region":"华东","PostalCode":"860954","Country":"中国","Phone":"(026) 5554112","Fax":null},{"CustomerID":"WILMK","CompanyName":"志远有限公司","ContactName":"王小姐","ContactTitle":"物主/市场助理","Address":"光明北路 211 号","City":"张家口","Region":"华北","PostalCode":"411019","Country":"中国","Phone":"(023) 9022458","Fax":"(023) 9022458"},{"CustomerID":"WOLZA","CompanyName":"汉典电机","ContactName":"刘先生","ContactTitle":"物主","Address":"潼关路 41 号","City":"天津","Region":"华北","PostalCode":"421008","Country":"中国","Phone":"(030) 56427012","Fax":"(030) 56427012"}];
+
+      let gdata = dw1data;
+
+      let dw1 = new DataWindow('#datawindow');
+      dw1.dataObject = treegrid;
+      dw1.data = gdata;
+      dw1.setTransObject(db);
+      // dw1.setOption({ mode: 'read'});
+
+      dwDB = new DataWindow('#dbTree');
+      dwDB.dataObject = treedw;
+      dwDB.data = await getData('demotree');
+      dwDB.setOption({ mode: 'read', currentRowSelected: true, showSelector: false });
+
+      let rptKey = null;
+      dwDB.on('RowFocusChanged',(evt, row)=>{
+
+        const rowData = dwDB.getItem(row);
+        const {data, report, status } = rowData;
+
+        rptKey = report;
+        //说明：getItem不指定列，可以取当前行的所有列，也可以通过数据窗口语法取
+        // const report = dwDB.getItem(row,'report');
+        if (!report || report === '') return;
+        if (status === 1) {
+          axios.get('./report/' + report + '.srd', {responseType: "blob"}).then((r)=> {
+            let reader = new FileReader();
+            reader.readAsText(r.data,'gb2312');
+            reader.onload = () => {
+              const d = parseDW(reader.result);
+              d.table.retrieve = report;
+              d.table.update = report;
+              dw1.dataObject = d;
+              if (data !== null) {
+                const arg = data ? data : report
+                dw1.retrieve(arg);
+              }
+            }
+          });
+        } else {
+          axios.get('./report/' + report).then((r)=> {
+            let d = r.data;
+            d.table.retrieve = report;
+            d.table.update = report;
+            dw1.dataObject = d;
+            if (data !== null) {
+              const arg = data ? data : report
+              dw1.retrieve(arg);
+            }
+          });
+        }
+      });
+
+
+      // dw1.on('ItemChanged',(evt, row, name, data) => {
+      //   console.log('ItemChanged',row, name,data);
+      // });
+      // dw1.on('ItemFocusChanged',(evt, row, name) => {
+      //   console.log('ItemFocusChanged',row, name);
+      // });
+      // dw1.on('RowFocusChanged',(evt, row)=>{
+      //   console.log('RowFocusChanged',row);
+      // });
+      // dw1.on('ButtonClicked',(evt, row, actionreturncode, name)=>{
+      //   console.log('ButtonClicked',row, name);
+      // });
+      // dw1.on('Clicked',(evt, row, colName) => {
+      //   console.log('Clicked',row, colName);
+      // });
+      // dw1.on(DWEvent.DropDownSelected,(evt) => {
+      //   console.log('DropDownSelected', evt);
+      // });
+
+      dw1.on('DoubleClicked',(evt, row, colName) => {
+        // let d = dw1.dataObject;
+        // delete d.reportData;
+        // d.createCols = 1;
+        // dw1.dataObject = d;
+        console.log('DoubleClicked', row, colName);
+      });
+
+      dw1.on('CellRender',(evt, row, name, draw) => {
+        if (rptKey === 'tiwei') {
+          paintTiWei(dw1.data, evt, draw);
+        }
+
+      });
+
+      const menus = [
+        { key: 'open', title: '编辑' },
+        { key: 'divider'},
+        { key: 'c1', title: '右键1' },
+        { key: 'c2', title: '右键2' },
+      ];
+
+      dw1.on('RightButtonClicked',(evt, row, colName) => {
+        H5UI.ContextMenu.show(evt, menus, (key) => {
+          console.log('menu clicked', key);
+          showDialog(evt.dw, row);
+        });
+        //console.log('RightButtonClicked', row, colName, x, y);
+      });
+
+
+      dw1.on(DWEvent.ToolbarChanged, (evt) => {
+        if (evt.type === 'save') {
+          downFlie(dw1.dataObject);
+        }
+      });
+      dwMain = dw1;
+      // addDs();
+      // drag();
+    }
+
+    //第二个数据源
+    function addDs() {
+      let dataobject = {
+        processing:1,
+        table:{
+          retrieve:'test2',
+          update:'test2',
+          columns:[
+            {name:'code',dbname:'code',type:'string',key:true,update:true},
+            {name:'supplier',dbname:'supplier',type:"string",update:true},
+            {name:'name',dbname:'name',type:'string',update:true},
+            {name:'dt',dbname:'dt',type:'datetime',update:true},
+            {name:'sex',dbname:'sex',type:'int',update:true, values:[{key:'男',value:1},{key:'女',value:0}]},
+          ],
+        }
+      }
+      const ds = new DataStore();
+      ds.dataObject = dataobject;
+      const ll_row = ds.insertRow(1);
+      ds.setItem(ll_row,'code','BH0001');
+      ds.setItem(ll_row, 'supplier', '深圳XXX有限公司');
+      ds.setItem(ll_row, 'name', '张三');
+      ds.setItem(ll_row, 'dt', '2021-01-01');
+      ds.setItem(ll_row, 'sex', 1);
+      dwMain.getReport().addDataStore('main',ds);
+      // dwMain.dataObject = dataobject;
+    }
+
+    function insert() {
+      const ds = dwMain;
+
+      let rowcount = ds.rowCount();
+      for (let i = rowcount; i < 100 + rowcount; i++) {
+        const price = (Math.random() * 100).toFixed(2);
+        let ll_row = ds.insertRow(0);
+        ds.setItem(ll_row,'id',i );
+        ds.setItem(ll_row,'name','name' + i);
+        ds.setItem(ll_row,'price',price);
+        ds.setItem(ll_row,'q_rksl','10.1');
+      }
+    }
+
+    let rs = {
+      toJson() {
+        let rows = [];
+        for (let i = 0; i < 100000; i++) {
+          const price = (Math.random() * 100).toFixed(2);
+          const row = { id: i, name: `name` + i, price };
+          rows.push(row);
+        }
+        return {data:rows};
+      },
+      close() {
+
+      }
+    };
+
+    // axios.defaults.baseURL = 'http://127.0.0.1:5555/erp';
+    const baseURL = 'http://127.0.0.1:5555/erp';
+    let db = {
+      sqls:[],
+      async retrieveDW(sql,...arg) {
+        //数据窗口retrieve时会调用，在客户端实际与服务器对接
+        if (datasource === 1) {
+          // console.log('请求Key:',sql,...arg);
+          let ret = await  axios.post(baseURL + '/h5dw/retrieve',{key:sql,args:arg});
+          if (ret.status === 200) {
+            return ret.data.data;
+          } else {
+            return [];
+          }
+        } else {
+          let key = arg[0];
+          if (sql === 'd_products') {
+            key = sql;
+          }
+          let ret = await  axios.get('./report/data/' + key);
+          return ret.data;
+        }
+
+
+        // 返回数据如下：
+        // return [
+        //   { id: 1, name: `name1`, price: 10.01, sex:2, img:'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' },
+        //   { id: 2, name: `name1`, price: 10.01, sex:2, dt: '2022-09-02 16:08:10' },
+        //   { id: 3, name: `name4`, price: 16.00, sex:1 },
+        //   { id: 4, name: `name2`, price: 17.00, sex:2 },
+        //   { id: 5, name: `name2`, price: 15.00, sex:2 },
+        // ];
+
+      },
+      async updateDW(key, data) {
+        console.log('update',key,data);
+        if (datasource === 1) {
+          let ret = await axios.post(baseURL + '/h5dw/update',{key,data});
+          if (ret.status === 200) {
+            return ret.data.code;
+          }
+        } else {
+          console.log('update','文件数据不进行更新');
+          return 1;
+        }
+
+      },
+      execute(sql) {
+        // this.sqls.push(sql);
+        // console.log('execute:' + sql);
+      },
+      reset() {
+        this.sqls = [];
+      },
+    };
+
+    window.dwGetDataObject =  async (key) => {
+      // let ret = await axios.get(`/h5dw/dataobject?key=` + key);
+      // if (ret.status === 200) {
+      //   return ret.data.data.dataobject;
+      // } else {
+      //   return null;
+      // }
+      if (key === 'd_products') {
+        let d = await  getDataObject(key + '.srd');
+        d.table.retrieve = 'd_products';
+        return d;
+      }
+    }
+
+    window.dwSyntaxFromSQL =  async (sql) => {
+      let ret = await axios.post(baseURL + '/h5dw/syntax', { sql } );
+      if (ret.status === 200) {
+        return ret.data.dataobject;
+      }
+      throw 'syntaxFromSQL error ' + ret.status;
+    }
+
+    async function test() {
+      console.log('asnc test',this._data);
+      return 1;
+    }
+
+    function post(url, data) {
+      let request =new XMLHttpRequest();
+      request.open('POST', url);
+      request.send(data);
+      // reuqest.send('http://127.0.0.1:5555/restful/init.go',data);
+      request.onload = function(e){
+        console.log(request.responseText)
+        //resolve(request.responseText);
+      }
+      request.onerror = function(e){
+        console.log(e);
+      }
+    }
+
+    async function edit(flag) {
+      // dwMain.design = testc;
+      // console.log(dwMain.design());
+      if (flag === 1) {
+        // dwMain.design(!isDesign);
+        dwMain.showDesigner(true);
+      } else {
+        const isDesign = dwMain.isDesign();
+        dwMain.design(!isDesign);
+      }
+
+    }
+
+    async function retrieve() {
+      dwMain.setTransObject(db);
+      await dwMain.retrieve(1,'test');
+    }
+
+    function update() {
+      dwMain.setTransObject(db);
+      dwMain.update();
+    }
+
+    function insertRow(last) {
+      let ll_row = 0;
+      const count = dwMain.rowCount();
+      if (last) {
+        ll_row = dwMain.insertRow(0);
+      } else {
+        ll_row = dwMain.getRow();
+        // ll_row = dwMain.insertRow(ll_row);
+
+        const parentId = dwMain.getItem(ll_row, 'parentId');
+        const orderId = dwMain.getItem(ll_row, 'order_num');
+        ll_row = dwMain.insertRow(ll_row);
+        // console.log('insert',ll_row, parentId, orderId);
+        dwMain.setItem(ll_row,'parentId', parentId);
+        dwMain.setItem(ll_row,'deptId', 1000 + ll_row);
+        dwMain.setItem(ll_row,'order_num', orderId + 1);
+        dwMain.setRedraw(true);
+      }
+
+      // dwMain.setItem(ll_row,'id',count);
+      // dwMain.setItem(ll_row,'name','name' + count);
+      // dwMain.setItem(ll_row,'price',10.0);
+      // dwMain.setItem(ll_row,'img','http://127.0.0.1:5555/img/1.jpg');
+    }
+    function deleteRow() {
+      dwMain.deleteRow(0);
+    }
+    function deleteAll() {
+      dwMain.rowsMove(1,dwMain.rowCount(), DWBuffer.Primary, dwMain, 1, DWBuffer.Delete);
+    }
+
+    function filter() {
+      // dwMain.setFilter(`name like '%123xxx%'`);
+      // dwMain.filter();
+      let input = document.getElementById('filter');
+      dwMain.filterAll(input.value);
+    }
+
+    function allFilter(value) {
+      dwMain.filterAll(value);
+    }
+    function print() {
+      dwMain.print({ paperUser:{width:'200mm',height:'100mm'}, range:'1-10', orientation:'portrait'});
+    }
+
+    let f = document.getElementById('dwdata');
+    let isRpt = false;
+    f.addEventListener('change',()=>{
+      const file = f.files[0];
+      let reader = new FileReader();//这是核心,读取操作就是由它完成.
+      if (isRpt) {
+        reader.readAsText(file,'utf-8');
+      } else {
+        reader.readAsText(file,'gb2312');//读取文件的内容,也可以读取文件的URL
+      }
+
+      reader.onload = () => {
+        //console.log(reader.result);
+        const d = isRpt ? JSON.parse(reader.result.toString()) : parseDW(reader.result);
+        dwMain.dataObject = d;
+      }
+    });
+
+    let fxls = document.getElementById('xlsdata');
+    fxls.addEventListener('change',()=> {
+      const file = fxls.files[0];
+      let reader = new FileReader();//这是核心,读取操作就是由它完成.
+      reader.readAsArrayBuffer(file);
+      reader.onload = () => {
+        importXlsx(dwMain, reader.result);
+      }
+    });
+
+    function setoption() {
+      dwMain.setOption('showFixedRowHeader', true);
+    }
+
+    function loaddw() {
+      isRpt = false;
+      f.click();
+    }
+
+    function loadrpt() {
+      isRpt = true;
+      f.click();
+    }
+
+    function loadxls() {
+      fxls.click();
+    }
+
+    function exportxls() {
+      exportXlsx(dwMain,{filename:'myh5dw.xlsx'});
+    }
+
+    function exportpdf() {
+      exportPdf(dwMain,{filename:'myh5dw.pdf', type:'image' });
+    }
+    function loaddata(n = 0) {
+      let demo1 = {
+        "name":"sheet2",
+        "freeze":"A4",
+        "styles":[{"border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]}},{"bgcolor":"#e9e9e9","border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]},"align":"center"},{"align":"center"},{"align":"right"}],
+        "merges":["A1:D1","A2:B2","C2:D2"],
+        "rows":{
+          "0":{"cells":{"0":{"merge":[0,3],"text":"SatReport报表","style":2}, "1":{"style":2},"2":{"style":2},"3":{"style":2}},"height":32},
+          "1":{"cells":{"0":{"merge":[0,1],"text":"#{'销售员：' + main.name}"},"2":{"merge":[0,1],"text":"#{'日期： ' + string(today(),'yyyy-MM-dd')}","style":3},"3":{"style":3}},"height":27},
+          "2":{"height":36,"cells":{"0":{"text":"id","style":1},"1":{"text":"name","style":1},"2":{"text":"price","style":1},"3":{"text":"dt","style":1}}},
+          "3":{"height":28,"cells":{"0":{"text":"#{id}","style":0,"edit":{"style":"checkbox","attrs":{"text":"","on":0,"off":1}}},"1":{"text":"#{name}","style":0},"2":{"text":"#{price}","style":0},"3":{"text":"#{dt}","style":0}}},
+          "len":4},
+        "cols":{"len":4},
+        report:{calc:true,header:{start:2,len:1},detail:{start:3,len:1},}
+      };
+
+      // freeform
+      let demo2 = {
+        "name":"sheet2",
+        "freeze":"A1",
+        "styles":[{"border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]}},{"bgcolor":"#e9e9e9","border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]},"align":"center"},{"align":"center"}],
+        "merges":["A1:D1"],
+        "rows":{
+          "0":{"cells":{"0":{"merge":[0,3],"text":"学生成绩表","style":2},}},
+          "1":{"cells":{"0":{"text":"编号","style":1},"1":{"text":"#{id}","style":0},"2":{"text":"成绩","style":1},"3":{"text":"#{price}","style":0}}},
+          "2":{"cells":{"0":{"text":"姓名","style":1},"1":{"text":"#{name}","style":0},"2":{"text":"日期","style":1},"3":{"text":"#{dt}","style":0}}},
+          "3":{"cells":{},"height":9},
+          "len":4},
+        "cols":{"len":4},
+        "report":{"header":{"start":0,"len":0},"detail":{"len":4},"calc":true}
+      };
+
+      // mainDetail
+      let demo3 = {
+        "name":"sheet2",
+        "freeze":"A5",
+        "styles":[{"border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]}},{"bgcolor":"#e9e9e9","border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]},"align":"center"},{"align":"center"}],
+        "merges":["A1:D1"],
+        "rows":{
+          "0":{"cells":{"0":{"merge":[0,3],"text":"主子表","style":2}},"height":35},
+          "1":{"cells":{"0":{"text":"编号","style":1},"1":{"text":"#{main.code}","style":0},"2":{"text":"供应商","style":1},"3":{"text":"#{main.supplier}","style":0}}},
+          "2":{"cells":{"0":{"text":"销售员","style":1},"1":{"text":"#{main.name}","style":0},"2":{"text":"日期","style":1},"3":{"text":"#{main.dt}","style":0}}},
+          "3":{"cells":{"0":{"text":"id","style":1},"1":{"text":"name","style":1},"2":{"text":"price","style":1},"3":{"text":"dt","style":1}},"height":30},
+          "4":{"cells":{"0":{"text":"#{id}","style":0},"1":{"text":"#{name}","style":0},"2":{"text":"#{price}","style":0},"3":{"text":"#{dt}","style":0}},"height":30},
+          "len":5},
+        "cols":{"3":{"width":143},"len":4},
+        "report":{"header":{"start":3,"len":1},"detail":{"len":1},"calc":true}
+      };
+
+      // MultiTitle
+      let demo4 = {
+        "name":"sheet2",
+        "freeze":"A3",
+        "styles":[{"border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]}},{"bgcolor":"#e9e9e9","border":{"bottom":["thin","#bfbfbf"],"top":["thin","#bfbfbf"],"left":["thin","#bfbfbf"],"right":["thin","#bfbfbf"]},"align":"center"},],
+        "merges":["A1:B1","C1:D1"],
+        "rows":{
+          "0":{"cells":{"0":{"merge":[0,1],"text":"表头1","style":1},"2":{"merge":[0,1],"text":"表头2","style":1},},"height":36},
+          "1":{"height":36,"cells":{"0":{"text":"id","style":1},"1":{"text":"name","style":1},"2":{"text":"price","style":1},"3":{"text":"dt","style":1}}},
+          "2":{"height":28,"cells":{"0":{"text":"#{id}","style":0},"1":{"text":"#{name}","style":0},"2":{"text":"#{price}","style":0},"3":{"text":"#{dt}","style":0}}},
+          "len":3},
+        "cols":{"len":4},
+        report:{calc:true,header:{start:0,len:2},detail:{len:1},}};
+
+      const demo = [demo1,demo2,demo3,demo4];
+      dwMain.loadData(demo[n]);
+    }
+
+    function loaddw1(index) {
+      if(!index) index = 0;
+      let dwsyntax = formkm;
+      if (index === 1) {
+        dwsyntax = keyeSyntax;
+      }
+      alert(dwsyntax);
+      let d = parseDW(dwsyntax)
+      dwMain.dataObject = d;
+    }
+
+    let gheight = 300;
+    function adjust() {
+      const dw = document.getElementById('datawindow');
+      dw.style['height'] = gheight + 'px';
+      gheight += 10;
+    }
+  </script>
+
+
+<script type="text/javascript" src="satreport.js"></script><script type="text/javascript" src="plugin.excel.js"></script><script type="text/javascript" src="plugin.pdf.js"></script></body>
+</html>

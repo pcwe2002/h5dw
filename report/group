@@ -1,0 +1,388 @@
+{
+    "units": 0,
+    "processing": 1,
+    "table": {
+        "retrieve": "select m.OrderID,m.CustomerId,c.CompanyName,m.OrderDate,M.Freight,d.ProductID,p.ProductName,d.UnitPrice,d.Quantity,d.Discount,d.UnitPrice*d.Quantity as Amount from (Orders m inner join (OrderDetails d inner join Products p on P.ProductID=D.ProductID) on m.OrderId=d.OrderId) left join Customers c on c.CustomerID=m.CustomerID where m.OrderID<=10300 order by m.OrderDate, m.OrderID",
+        "update": "",
+        "updatewhere": 2,
+        "updatekeyinplace": true,
+        "columns": [{
+                "name": "OrderID",
+                "dbname": "OrderID",
+                "type": "long",
+                "key": false,
+                "update": true
+            }, {
+                "name": "CustomerId",
+                "dbname": "CustomerId",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "CompanyName",
+                "dbname": "CompanyName",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "OrderDate",
+                "dbname": "OrderDate",
+                "type": "datetime",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Freight",
+                "dbname": "Freight",
+                "type": "number",
+                "key": false,
+                "update": true
+            }, {
+                "name": "ProductID",
+                "dbname": "ProductID",
+                "type": "long",
+                "key": false,
+                "update": true
+            }, {
+                "name": "ProductName",
+                "dbname": "ProductName",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "UnitPrice",
+                "dbname": "UnitPrice",
+                "type": "number",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Quantity",
+                "dbname": "Quantity",
+                "type": "long",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Discount",
+                "dbname": "Discount",
+                "type": "number",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Amount",
+                "dbname": "Amount",
+                "type": "number",
+                "key": false,
+                "update": false
+            }
+        ]
+    },
+    "reportData": {
+        "name": "sheet2",
+        "freeze": "A2",
+        "styles": [{
+                "border": {
+                    "bottom": [
+                        "thin",
+                        "#bfbfbf"
+                    ],
+                    "top": [
+                        "thin",
+                        "#bfbfbf"
+                    ],
+                    "left": [
+                        "thin",
+                        "#bfbfbf"
+                    ],
+                    "right": [
+                        "thin",
+                        "#bfbfbf"
+                    ]
+                }
+            }, {
+                "bgcolor": "#e9e9e9",
+                "border": {
+                    "bottom": [
+                        "thin",
+                        "#bfbfbf"
+                    ],
+                    "top": [
+                        "thin",
+                        "#bfbfbf"
+                    ],
+                    "left": [
+                        "thin",
+                        "#bfbfbf"
+                    ],
+                    "right": [
+                        "thin",
+                        "#bfbfbf"
+                    ]
+                },
+                "align": "center"
+            }, {
+                "bgcolor": "#e9e9e9"
+            }, {
+                "border": {
+                    "bottom": [
+                        "thin",
+                        "#bfbfbf"
+                    ],
+                    "top": [
+                        "thin",
+                        "#bfbfbf"
+                    ],
+                    "left": [
+                        "thin",
+                        "#bfbfbf"
+                    ],
+                    "right": [
+                        "thin",
+                        "#bfbfbf"
+                    ]
+                },
+                "align": "right"
+            }, {
+                "bgcolor": "#e9e9e9",
+                "align": "right"
+            }, {
+                "align": "left"
+            }, {
+                "align": "center"
+            }, {
+                "align": "center",
+                "font": {
+                    "size": 14
+                }
+            }
+        ],
+        "merges": [
+            "B3:C3",
+            "D3:E3",
+            "F3:G3",
+            "A1:G1"
+        ],
+        "rows": {
+            "0": {
+                "cells": {
+                    "0": {
+                        "merge": [
+                            0,
+                            6
+                        ],
+                        "text": "按单统计销售明细报表",
+                        "style": 7
+                    },
+                    "1": {
+                        "style": 7
+                    },
+                    "2": {
+                        "style": 7
+                    },
+                    "3": {
+                        "style": 7
+                    },
+                    "4": {
+                        "style": 7
+                    },
+                    "5": {
+                        "style": 7
+                    },
+                    "6": {
+                        "style": 7
+                    }
+                },
+                "height": 49
+            },
+            "1": {
+                "height": 36,
+                "cells": {
+                    "0": {
+                        "text": "产品名称",
+                        "style": 1
+                    },
+                    "1": {
+                        "text": "单价",
+                        "style": 1
+                    },
+                    "2": {
+                        "text": "数量",
+                        "style": 1
+                    },
+                    "3": {
+                        "text": "折扣",
+                        "style": 1
+                    },
+                    "4": {
+                        "text": "折扣前金额",
+                        "style": 1
+                    },
+                    "5": {
+                        "text": "折扣金额",
+                        "style": 1
+                    },
+                    "6": {
+                        "text": "折扣后金额",
+                        "style": 1
+                    }
+                }
+            },
+            "2": {
+                "cells": {
+                    "0": {
+                        "text": "#{OrderID}"
+                    },
+                    "1": {
+                        "text": "#{CompanyName}",
+                        "merge": [
+                            0,
+                            1
+                        ],
+                        "style": 5
+                    },
+                    "2": {
+                        "style": 5
+                    },
+                    "3": {
+                        "merge": [
+                            0,
+                            1
+                        ],
+                        "text": "#{OrderDate}"
+                    },
+                    "5": {
+                        "text": "#{'运费:' + Freight}",
+                        "merge": [
+                            0,
+                            1
+                        ]
+                    }
+                }
+            },
+            "3": {
+                "height": 28,
+                "cells": {
+                    "0": {
+                        "text": "#{ProductName}",
+                        "style": 0
+                    },
+                    "1": {
+                        "text": "#{UnitPrice}",
+                        "style": 3
+                    },
+                    "2": {
+                        "text": "#{Quantity}",
+                        "style": 3
+                    },
+                    "3": {
+                        "text": "#{Discount}",
+                        "style": 3
+                    },
+                    "4": {
+                        "text": "#{Amount}",
+                        "style": 3
+                    },
+                    "5": {
+                        "text": "#{Discount * Amount}",
+                        "style": 3
+                    },
+                    "6": {
+                        "text": "#{Amount-Discount * Amount}",
+                        "style": 3
+                    }
+                }
+            },
+            "4": {
+                "cells": {
+                    "0": {
+                        "text": "本单小计",
+                        "style": 2
+                    },
+                    "1": {
+                        "text": "",
+                        "style": 2
+                    },
+                    "2": {
+                        "style": 2
+                    },
+                    "3": {
+                        "style": 2
+                    },
+                    "4": {
+                        "text": "#{sum(Amount for group 1)}",
+                        "style": 4
+                    },
+                    "5": {
+                        "text": "#{sum(Discount * Amount for group 1)}",
+                        "style": 4
+                    },
+                    "6": {
+                        "text": "#{sum(Amount-Discount * Amount for group 1)}",
+                        "style": 4
+                    }
+                }
+            },
+            "6": {
+                "cells": {},
+                "height": 24
+            },
+            "len": 7,
+            "height": 25,
+            "minHeight": 5
+        },
+        "cols": {
+            "0": {
+                "width": 116
+            },
+            "1": {
+                "width": 78
+            },
+            "2": {
+                "width": 70
+            },
+            "3": {
+                "width": 76
+            },
+            "4": {
+                "width": 82
+            },
+            "5": {
+                "width": 107
+            },
+            "6": {
+                "width": 95
+            },
+            "len": 7
+        },
+        "report": {
+            "calc": true,
+            "bands": [{
+                    "start": 1,
+                    "len": 1,
+                    "name": "header"
+                }, {
+                    "start": 2,
+                    "len": 1,
+                    "name": "header.1",
+                    "level": 1
+                }, {
+                    "start": 3,
+                    "len": 1,
+                    "name": "detail"
+                }, {
+                    "start": 4,
+                    "len": 1,
+                    "name": "trailer.1",
+                    "level": 1
+                }
+            ],
+            "group": [{
+                    "level": 1,
+                    "by": [
+                        "OrderID"
+                    ]
+                }
+            ]
+        },
+        "validations": [],
+        "autofilter": {}
+    }
+}
