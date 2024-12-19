@@ -1,0 +1,262 @@
+{
+    "units": 0,
+    "processing": 1,
+    "table": {
+        "retrieve": "select * from customers",
+        "update": "customers",
+        "updatewhere": 2,
+        "updatekeyinplace": true,
+        "columns": [{
+                "name": "CustomerID",
+                "label": "客户编号",
+                "dbname": "CustomerID",
+                "type": "string",
+                "key": true,
+                "update": true
+            }, {
+                "name": "CompanyName",
+                "dbname": "CompanyName",
+                "label": "公司名称",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "ContactName",
+                "dbname": "ContactName",
+                "label": "联系人",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "ContactTitle",
+                "dbname": "ContactTitle",
+                "label": "联系方式",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Address",
+                "dbname": "Address",
+                "label": "地址",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "City",
+                "dbname": "City",
+                "label": "城市",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Region",
+                "dbname": "Region",
+                "label": "地区",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "PostalCode",
+                "dbname": "PostalCode",
+                "label": "邮编",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Country",
+                "dbname": "Country",
+                "label": "国家",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Phone",
+                "dbname": "Phone",
+                "label": "电话",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Fax",
+                "dbname": "Fax",
+                "label": "传真",
+                "type": "string",
+                "key": false,
+                "update": true
+            }
+        ]
+    },
+    "reportData": {
+        "name": "sheet2",
+        "freeze": "A2",
+        "styles": [{
+                "border": {
+                    "bottom": [
+                        "thin",
+                        "lightgrey"
+                    ],
+                    "top": [
+                        "thin",
+                        "lightgrey"
+                    ],
+                    "left": [
+                        "thin",
+                        "lightgrey"
+                    ],
+                    "right": [
+                        "thin",
+                        "lightgrey"
+                    ]
+                }
+            }, {
+                "bgcolor": "#E3E6EA",
+                "border": {
+                    "bottom": [
+                        "thin",
+                        "lightgrey"
+                    ],
+                    "top": [
+                        "thin",
+                        "lightgrey"
+                    ],
+                    "left": [
+                        "thin",
+                        "lightgrey"
+                    ],
+                    "right": [
+                        "thin",
+                        "lightgrey"
+                    ]
+                },
+                "align": "center"
+            }, {
+                "align": "center"
+            }, {
+                "align": "center",
+                "font": {
+                    "size": 14
+                }
+            }
+        ],
+        "merges": [
+            "A1:H1"
+        ],
+        "rows": {
+            "0": {
+                "cells": {
+                    "0": {
+                        "text": "客户基本信息",
+                        "style": 3,
+                        "merge": [
+                            0,
+                            7
+                        ]
+                    }
+                },
+                "height": 39
+            },
+            "1": {
+                "cells": {
+                    "0": {
+                        "text": "客户编号",
+                        "style": 1
+                    },
+                    "1": {
+                        "text": "公司名称",
+                        "style": 1
+                    },
+                    "2": {
+                        "text": "联系人",
+                        "style": 1
+                    },
+                    "3": {
+                        "text": "地址",
+                        "style": 1
+                    },
+                    "4": {
+                        "text": "城市",
+                        "style": 1
+                    },
+                    "5": {
+                        "text": "地区",
+                        "style": 1
+                    },
+                    "6": {
+                        "text": "邮编",
+                        "style": 1
+                    },
+                    "7": {
+                        "text": "电话",
+                        "style": 1
+                    }
+                }
+            },
+            "2": {
+                "cells": {
+                    "0": {
+                        "text": "#{CustomerID}",
+                        "style": 0
+                    },
+                    "1": {
+                        "text": "#{CompanyName}",
+                        "style": 0
+                    },
+                    "2": {
+                        "text": "#{ContactName}",
+                        "style": 0
+                    },
+                    "3": {
+                        "text": "#{Address}",
+                        "style": 0
+                    },
+                    "4": {
+                        "text": "#{City}",
+                        "style": 0
+                    },
+                    "5": {
+                        "text": "#{Region}",
+                        "style": 0
+                    },
+                    "6": {
+                        "text": "#{PostalCode}",
+                        "style": 0
+                    },
+                    "7": {
+                        "text": "#{Phone}",
+                        "style": 0
+                    }
+                }
+            },
+            "len": 3,
+            "height": 25,
+            "minHeight": 5
+        },
+        "cols": {
+            "1": {
+                "width": 120
+            },
+            "3": {
+                "width": 138
+            },
+            "7": {
+                "width": 108
+            },
+            "len": 8
+        },
+        "report": {
+            "calc": true,
+            "bands": [{
+                    "start": 1,
+                    "len": 1,
+                    "name": "header"
+                }, {
+                    "start": 2,
+                    "len": 1,
+                    "name": "detail"
+                }
+            ]
+        },
+        "validations": [],
+        "autofilter": {}
+    }
+}

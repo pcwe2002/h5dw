@@ -1,0 +1,463 @@
+{
+    "units": 0,
+    "processing": 1,
+    "table": {
+        "retrieve": "select * from customers order by Region,City",
+        "update": "customers",
+        "updatewhere": 2,
+        "updatekeyinplace": true,
+        "columns": [{
+                "name": "CustomerID",
+                "dbname": "CustomerID",
+                "type": "string",
+                "key": true,
+                "update": true
+            }, {
+                "name": "CompanyName",
+                "dbname": "CompanyName",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "ContactName",
+                "dbname": "ContactName",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "ContactTitle",
+                "dbname": "ContactTitle",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Address",
+                "dbname": "Address",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "City",
+                "dbname": "City",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Region",
+                "dbname": "Region",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "PostalCode",
+                "dbname": "PostalCode",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Country",
+                "dbname": "Country",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Phone",
+                "dbname": "Phone",
+                "type": "string",
+                "key": false,
+                "update": true
+            }, {
+                "name": "Fax",
+                "dbname": "Fax",
+                "type": "string",
+                "key": false,
+                "update": true
+            }
+        ]
+    },
+    "reportData": {
+        "name": "sheet2",
+        "freeze": "A2",
+        "styles": [{
+                "align": "center",
+                "font": {
+                    "size": 14
+                }
+            }, {
+                "align": "center",
+                "border": {
+                    "bottom": ["thin", "#bfbfbf"],
+                    "top": ["thin", "#bfbfbf"],
+                    "left": ["thin", "#bfbfbf"],
+                    "right": ["thin", "#bfbfbf"]
+                }
+            }, {
+                "border": {
+                    "left": ["thin", "#bfbfbf"],
+                    "bottom": ["thin", "#bfbfbf"]
+                }
+            }, {
+                "border": {
+                    "bottom": ["thin", "#bfbfbf"]
+                }
+            }, {
+                "border": {
+                    "right": ["thin", "#bfbfbf"],
+                    "bottom": ["thin", "#bfbfbf"]
+                }
+            }, {
+                "border": {
+                    "bottom": ["thin", "#bfbfbf"],
+                    "top": ["thin", "#bfbfbf"],
+                    "left": ["thin", "#bfbfbf"],
+                    "right": ["thin", "#bfbfbf"]
+                }
+            }, {
+                "bgcolor": "#f7f7f7"
+            }, {
+                "bgcolor": "#e9e9e9"
+            }, {
+                "bgcolor": "#d5dce4"
+            }
+        ],
+        "merges": ["A1:H1", "A3:B3", "C3:D3", "A5:B5", "A4:B4", "A7:B7", "A8:B8", "A9:B9"],
+        "rows": {
+            "0": {
+                "cells": {
+                    "0": {
+                        "text": "客户基本信息",
+                        "style": 0,
+                        "merge": [0, 7]
+                    }
+                },
+                "height": 39
+            },
+            "1": {
+                "cells": {
+                    "0": {
+                        "text": "客户编号",
+                        "style": 1
+                    },
+                    "1": {
+                        "text": "公司名称",
+                        "style": 1
+                    },
+                    "2": {
+                        "text": "联系人",
+                        "style": 1
+                    },
+                    "3": {
+                        "text": "地址",
+                        "style": 1
+                    },
+                    "4": {
+                        "text": "城市",
+                        "style": 1
+                    },
+                    "5": {
+                        "text": "地区",
+                        "style": 1
+                    },
+                    "6": {
+                        "text": "邮编",
+                        "style": 1
+                    },
+                    "7": {
+                        "text": "电话",
+                        "style": 1
+                    }
+                },
+                "height": 30
+            },
+            "2": {
+                "cells": {
+                    "0": {
+                        "merge": [0, 1],
+                        "text": "#{'国家:' +Country}",
+                        "edit": {
+                            "style": "tree"
+                        },
+                        "style": 2
+                    },
+                    "2": {
+                        "merge": [0, 1],
+                        "text": "",
+                        "style": 3
+                    },
+                    "4": {
+                        "style": 3
+                    },
+                    "5": {
+                        "style": 3
+                    },
+                    "6": {
+                        "style": 3
+                    },
+                    "7": {
+                        "style": 4
+                    }
+                }
+            },
+            "3": {
+                "cells": {
+                    "0": {
+                        "style": 2,
+                        "merge": [0, 1],
+                        "text": "#{'  区域:' + Region}",
+                        "edit": {
+                            "style": "tree"
+                        }
+                    },
+                    "2": {
+                        "style": 3
+                    },
+                    "3": {
+                        "style": 3
+                    },
+                    "4": {
+                        "style": 3
+                    },
+                    "5": {
+                        "style": 3
+                    },
+                    "6": {
+                        "style": 3
+                    },
+                    "7": {
+                        "style": 4
+                    }
+                }
+            },
+            "4": {
+                "cells": {
+                    "0": {
+                        "text": "#{'    城市:' + City}",
+                        "edit": {
+                            "style": "tree"
+                        },
+                        "merge": [0, 1],
+                        "style": 2
+                    },
+                    "1": {
+                        "text": ""
+                    },
+                    "2": {
+                        "style": 3
+                    },
+                    "3": {
+                        "style": 3
+                    },
+                    "4": {
+                        "style": 3
+                    },
+                    "5": {
+                        "style": 3
+                    },
+                    "6": {
+                        "style": 3
+                    },
+                    "7": {
+                        "style": 4
+                    }
+                }
+            },
+            "5": {
+                "cells": {
+                    "0": {
+                        "text": "#{CustomerID}",
+                        "style": 5
+                    },
+                    "1": {
+                        "text": "#{CompanyName}",
+                        "style": 5
+                    },
+                    "2": {
+                        "text": "#{ContactName}",
+                        "style": 5
+                    },
+                    "3": {
+                        "text": "#{Address}",
+                        "style": 5
+                    },
+                    "4": {
+                        "text": "#{City}",
+                        "style": 5
+                    },
+                    "5": {
+                        "text": "#{Region}",
+                        "style": 5
+                    },
+                    "6": {
+                        "text": "#{PostalCode}",
+                        "style": 5
+                    },
+                    "7": {
+                        "text": "#{Phone}",
+                        "style": 5
+                    }
+                }
+            },
+            "6": {
+                "cells": {
+                    "0": {
+                        "merge": [0, 1],
+                        "text": "#{'    ' + City + '市人数统计:' + count(City for group 3)}",
+                        "style": 6
+                    },
+                    "1": {
+                        "style": 6
+                    },
+                    "2": {
+                        "style": 6
+                    },
+                    "3": {
+                        "style": 6
+                    },
+                    "4": {
+                        "style": 6
+                    },
+                    "5": {
+                        "style": 6
+                    },
+                    "6": {
+                        "style": 6
+                    },
+                    "7": {
+                        "style": 6
+                    }
+                }
+            },
+            "7": {
+                "cells": {
+                    "0": {
+                        "merge": [0, 1],
+                        "text": "#{'  ' + Region + '区域人数统计:' + count(Region for group 2)}",
+                        "style": 7
+                    },
+                    "1": {
+                        "style": 7
+                    },
+                    "2": {
+                        "style": 7
+                    },
+                    "3": {
+                        "style": 7
+                    },
+                    "4": {
+                        "style": 7
+                    },
+                    "5": {
+                        "style": 7
+                    },
+                    "6": {
+                        "style": 7
+                    },
+                    "7": {
+                        "style": 7
+                    }
+                }
+            },
+            "8": {
+                "cells": {
+                    "0": {
+                        "merge": [0, 1],
+                        "text": "#{'  ' + Country + '人数统计:' + count(City for group 1)}",
+                        "style": 8
+                    },
+                    "1": {
+                        "style": 8
+                    },
+                    "2": {
+                        "style": 8
+                    },
+                    "3": {
+                        "style": 8
+                    },
+                    "4": {
+                        "style": 8
+                    },
+                    "5": {
+                        "style": 8
+                    },
+                    "6": {
+                        "style": 8
+                    },
+                    "7": {
+                        "style": 8
+                    }
+                }
+            },
+            "len": 10,
+            "height": 25,
+            "minHeight": 5
+        },
+        "cols": {
+            "1": {
+                "width": 190
+            },
+            "3": {
+                "width": 138
+            },
+            "7": {
+                "width": 108
+            },
+            "len": 8
+        },
+        "report": {
+            "calc": false,
+            "bands": [{
+                    "start": 1,
+                    "len": 1,
+                    "name": "header"
+                }, {
+                    "start": 2,
+                    "len": 1,
+                    "name": "header.1",
+                    "level": 1
+                }, {
+                    "start": 3,
+                    "len": 1,
+                    "name": "header.2",
+                    "level": 2
+                }, {
+                    "start": 4,
+                    "len": 1,
+                    "name": "header.3",
+                    "level": 3
+                }, {
+                    "start": 5,
+                    "len": 1,
+                    "name": "detail"
+                }, {
+                    "start": 6,
+                    "len": 1,
+                    "name": "trailer.3",
+                    "level": 3
+                }, {
+                    "start": 7,
+                    "len": 1,
+                    "name": "trailer.2",
+                    "level": 2
+                }, {
+                    "start": 8,
+                    "len": 1,
+                    "name": "trailer.1",
+                    "level": 1
+                }
+            ],
+            "group": [{
+                    "level": 1,
+                    "by": ["Country"]
+                }, {
+                    "level": 2,
+                    "by": ["Region"]
+                }, {
+                    "level": 3,
+                    "by": ["City"]
+                }
+            ]
+        },
+        "validations": [],
+        "autofilter": {}
+    }
+}

@@ -1,0 +1,171 @@
+{
+    "processing": 1,
+    "table": {
+        "retrieve": "select dept_id, parent_id, dept_name, order_num, leader, phone, email, status from sys_dept",
+        "update": "sys_dept",
+        "columns": [{
+                "name": "deptId",
+                "type": "long",
+                "dbname": "dept_id",
+                "key": 1,
+                "update": 1
+            }, {
+                "name": "parentId",
+                "type": "long",
+                "dbname": "parent_id",
+                "key": 0,
+                "update": 1
+            }, {
+                "name": "dept_name",
+                "type": "string",
+                "dbname": "dept_name",
+                "key": 0,
+                "update": 1
+            }, {
+                "name": "order_num",
+                "type": "long",
+                "dbname": "order_num",
+                "key": 0,
+                "update": 1
+            }, {
+                "name": "leader",
+                "type": "string",
+                "dbname": "leader",
+                "key": 0,
+                "update": 1
+            }, {
+                "name": "phone",
+                "type": "string",
+                "dbname": "phone",
+                "key": 0,
+                "update": 1
+            }, {
+                "name": "email",
+                "type": "string",
+                "dbname": "email",
+                "key": 0,
+                "update": 1
+            }, {
+                "name": "status",
+                "type": "string",
+                "dbname": "status",
+                "key": 0,
+                "update": 1
+            }
+        ]
+    },
+    "reportData": {
+        "name": "sheet1",
+        "freeze": "A2",
+        "styles": [{
+                "border": {
+                    "bottom": ["thin", "#bfbfbf"],
+                    "top": ["thin", "#bfbfbf"],
+                    "left": ["thin", "#bfbfbf"],
+                    "right": ["thin", "#bfbfbf"]
+                },
+                "align": "center"
+            }, {
+                "border": {
+                    "bottom": ["thin", "#bfbfbf"],
+                    "top": ["thin", "#bfbfbf"],
+                    "left": ["thin", "#bfbfbf"],
+                    "right": ["thin", "#bfbfbf"]
+                }
+            }
+        ],
+        "merges": [],
+        "rows": {
+            "0": {
+                "height": 36,
+                "cells": {
+                    "0": {
+                        "text": "名称",
+                        "style": 0
+                    },
+                    "1": {
+                        "text": "负责人",
+                        "style": 0
+                    },
+                    "2": {
+                        "text": "电话",
+                        "style": 0
+                    },
+                    "3": {
+                        "text": "邮箱",
+                        "style": 0
+                    },
+                    "4": {
+                        "text": "状态",
+                        "style": 0
+                    }
+                }
+            },
+            "1": {
+                "height": 28,
+                "cells": {
+                    "0": {
+                        "text": "#{dept_name}",
+                        "style": 1,
+                        "edit": {
+                            "style": "tree"
+                        }
+                    },
+                    "1": {
+                        "text": "#{leader}",
+                        "style": 1
+                    },
+                    "2": {
+                        "text": "#{phone}",
+                        "style": 1
+                    },
+                    "3": {
+                        "text": "#{email}",
+                        "style": 1
+                    },
+                    "4": {
+                        "text": "#{status}",
+                        "style": 1
+                    }
+                }
+            },
+            "len": 2,
+            "height": 25,
+            "minHeight": 5
+        },
+        "cols": {
+            "0": {
+                "width": 128
+            },
+            "1": {
+                "width": 104
+            },
+            "2": {
+                "width": 102
+            },
+            "3": {
+                "width": 88
+            },
+            "len": 5
+        },
+        "report": {
+            "calc": false,
+            "bands": [{
+                    "start": 0,
+                    "len": 1,
+                    "name": "header"
+                }, {
+                    "start": 1,
+                    "len": 1,
+                    "name": "detail"
+                }
+            ],
+            "tree": {
+                "parentId": "parentId",
+                "id": "deptId"
+            }
+        },
+        "validations": [],
+        "autofilter": {}
+    }
+}

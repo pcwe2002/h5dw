@@ -1,0 +1,156 @@
+{
+    "processing": 1,
+    "table": {
+        "retrieve": "test1",
+        "update": "test1",
+        "columns": [{
+                "name": "id",
+                "label": "id",
+                "type": "long",
+                "dbname": "id",
+                "key": 1,
+                "update": 1
+            }, {
+                "name": "name",
+                "label": "name",
+                "type": "string",
+                "dbname": "name",
+                "key": 0,
+                "update": 1
+            }, {
+                "name": "price",
+                "label": "price",
+                "type": "number",
+                "dbname": "price",
+                "key": 0,
+                "update": 1
+            }, {
+                "name": "dt",
+                "label": "dt",
+                "type": "datetime",
+                "dbname": "dt",
+                "key": 0,
+                "update": 1
+            }, {
+                "name": "sex",
+                "label": "sex",
+                "type": "int",
+                "dbname": "sex",
+                "key": 0,
+                "update": 1
+            }, {
+                "name": "img",
+                "label": "img",
+                "type": "string",
+                "dbname": "img",
+                "key": 0,
+                "update": 0
+            }
+        ]
+    },
+    "createCols": 0,
+    "reportData": {
+        "name": "sheet1",
+        "freeze": "A2",
+        "styles": [{
+                "border": {
+                    "bottom": ["thin", "#bfbfbf"],
+                    "top": ["thin", "#bfbfbf"],
+                    "left": ["thin", "#bfbfbf"],
+                    "right": ["thin", "#bfbfbf"]
+                },
+                "align": "center"
+            }, {}, {
+                "border": {
+                    "top": ["thin", "#bfbfbf"]
+                }
+            }
+        ],
+        "merges": ["A1:D1", "A2:D22"],
+        "rows": {
+            "0": {
+                "height": 36,
+                "cells": {
+                    "0": {
+                        "name": "id_t",
+                        "style": 0,
+                        "merge": [0, 3],
+                        "text": "体温单"
+                    }
+                }
+            },
+            "1": {
+                "height": 57,
+                "cells": {
+                    "0": {
+                        "name": "id",
+                        "style": 1,
+                        "edit": {
+                            "style": "paint",
+                            "attrs": {}
+                        },
+                        "merge": [3, 3]
+                    }
+                }
+            },
+            "6": {
+                "cells": {},
+                "height": 71
+            },
+            "19": {
+                "cells": {},
+                "height": 76
+            },
+            "20": {
+                "cells": {},
+                "height": 27
+            },
+            "21": {
+                "cells": {},
+                "height": 230
+            },
+            "22": {
+                "cells": {
+                    "0": {
+                        "style": 2
+                    },
+                    "1": {
+                        "style": 2
+                    },
+                    "2": {
+                        "style": 2
+                    },
+                    "3": {
+                        "style": 2
+                    }
+                }
+            },
+            "len": 23,
+            "height": 25,
+            "minHeight": 5
+        },
+        "cols": {
+            "3": {
+                "width": 655
+            },
+            "len": 4
+        },
+        "child": {
+        },
+        "report": {
+            "calc": false,
+            "bands": [{
+                    "start": 0,
+                    "len": 0,
+                    "name": "header"
+                }, {
+                    "start": 1,
+                    "len": 0,
+                    "name": "detail"
+                }
+            ]
+        },
+        "validations": [],
+        "autofilter": {}
+    }
+}
